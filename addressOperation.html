@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/addressOperation.css">
+    <link rel="stylesheet" href="bootsrtapswitch/css/bootstrap3/bootstrap-switch.min.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        新增收货地址
+    </div>
+    <div class="content">
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label for="name" class="col-xs-3 col-sm-2 control-label">联系人:</label>
+                <div class="col-xs-9 col-sm-10">
+                    <input type="text" class="form-control" id="name" placeholder="联系人姓名" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="" class="col-xs-3 col-sm-2 control-label">性别:</label>
+                <div class="col-xs-9 col-sm-10">
+                    <div style="display:inline-block;">
+                        <input type="radio" checked name="sex" value="0">
+                        <span>男</span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <input type="radio" name="sex" value="1">
+                        <span>女</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="tel" class="col-xs-3 col-sm-2 control-label">电话:</label>
+                <div class="col-xs-9 col-sm-10">
+                    <input type="text" class="form-control" id="tel" placeholder="电话" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="address" class="col-xs-3 col-sm-2 control-label">收货地址:</label>
+                <div class="col-xs-9 col-sm-10">
+                    <input type="text" class="form-control" id="address" placeholder="收货地址" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="used_address" class="col-xs-5 col-sm-2 control-label">设置为常用收货地址:</label>
+                <div class="col-xs-7 col-sm-10">
+                    <input type="checkbox" id="used_address" name="status" value="0">
+                </div>
+            </div>
+            <button type="button" class="btn btn-default btn-success btn-block save">保存</button>
+        </form>
+    </div>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootsrtapswitch/js/bootstrap-switch.min.js"></script>
+    <script>
+        $('[name="status"]').bootstrapSwitch({
+            onText: "是",
+            offText: "否",
+            onColor: "success",
+            offColor: "info",
+            size: "small",
+            onSwitchChange: function (event, state) {
+                if (state == true) {
+                    $(this).val("1");
+                } else {
+                    $(this).val("0");
+                }
+            }
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem("token");
+            if (token != null) {
+                var source = sessionStorage.getItem("source")
+                var address_operation = sessionStorage.getItem("address_operation");
+                var address_id = sessionStorage.getItem("address_id");
+
+                var name_obj = $("#name");
+                var tel_obj = $("#tel");
+                var address_obj = $("#address");
+                var used_address_obj = $("#used_address");
+                var sex_men_obj = $('input:radio[value=0]');
+                var sex_women_obj = $('input:radio[value=1]');
+
+                switch (address_operation) {
+                    //修改收货地址
+                    case 'update':
+                        $(".header").html("修改收货地址");
+                        $.ajax({
+                            url: getUrl("/address/findById"),
+                            type: "GET",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", token);
+                            },
+                            data: {
+                                addressId: address_id
+                            },
+                            success: function (result) {
+                                var data = result.data;
+                                name_obj.val(data.contactsName)
+                                tel_obj.val(data.contactsPhoneNum)
+                                address_obj.val(data.deliveryaddress)
+                                if (data.contactsSex == 0) {
+                                    sex_men_obj.prop('checked', true)
+                                } else {
+                                    sex_women_obj.prop('checked', true)
+                                }
+                                used_address_obj.val(data.commonlyUsed)
+                                if (data.commonlyUsed == 1) {
+                                    $('[name="status"]').bootstrapSwitch('state', true);
+                                }
+                                $(".save").click(function () {
+                                    var sex_checked_obj = $('input:radio:checked');
+
+                                    var phone_num_reg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;
+
+                                    if (name_obj.val() == "") {
+                                        Swal.fire({ title: "联系人姓名不能为空", confirmButtonColor: '#3190e8' });
+                                        return;
+                                    }
+
+                                    if (tel_obj.val() == "") {
+                                        Swal.fire({ title: "电话不能为空", confirmButtonColor: '#3190e8' });
+                                        return;
+                                    }
+
+                                    if (!phone_num_reg.test(tel_obj.val())) {
+                                        Swal.fire({ title: "请输入正确的手机号", confirmButtonColor: '#3190e8' });
+                                        return;
+                                    }
+
+                                    if (address_obj.val() == "") {
+                                        Swal.fire({ title: "收货地址不能为空", confirmButtonColor: '#3190e8' });
+                                        return;
+                                    }
+
+                                    Swal.fire({
+                                        title: '修改收货地址',
+                                        icon: 'info',
+                                        text: "确定要修改这个收货地址吗？",
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#3190e8',
+                                        cancelButtonColor: '#666666',
+                                        confirmButtonText: '确定',
+                                        cancelButtonText: '取消'
+                                    }).then((result) => {
+                                        if (result.value) {
+                                            $.ajax({
+                                                url: getUrl("/address/update"),
+                                                type: "POST",
+                                                beforeSend: function (xhr) {
+                                                    xhr.setRequestHeader("Authorization", token);
+                                                },
+                                                data: {
+                                                    deliveryaddressId: address_id,
+                                                    contactsName: name_obj.val(),
+                                                    contactsPhoneNum: tel_obj.val(),
+                                                    deliveryaddress: address_obj.val(),
+                                                    commonlyUsed: used_address_obj.val(),
+                                                    contactsSex: sex_checked_obj.val()
+                                                },
+                                                success: function (result) {
+                                                    if (result.code != 0) {
+                                                        Swal.fire({
+                                                            icon: 'success',
+                                                            title: '修改成功',
+                                                            showConfirmButton: false,
+                                                            timer: 1500
+                                                        });
+                                                        setTimeout(function () {
+                                                            window.location.href = "address.html"
+                                                        }, 1500)
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    })
+                                })
+                            }
+                        })
+                        break;
+                    //新增收货地址
+                    case 'add':
+                        $(".header").html("新增收货地址");
+                        $(".save").click(function () {
+                            var name_obj = $("#name");
+                            var tel_obj = $("#tel");
+                            var address_obj = $("#address");
+                            var used_address_obj = $("#used_address");
+                            var sex_checked_obj = $('input:radio:checked');
+
+                            var phone_num_reg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;
+
+                            if (name_obj.val() == "") {
+                                Swal.fire({ title: "联系人姓名不能为空", confirmButtonColor: '#3190e8' });
+                                return;
+                            }
+
+                            if (tel_obj.val() == "") {
+                                Swal.fire({ title: "电话不能为空", confirmButtonColor: '#3190e8' });
+                                return;
+                            }
+
+                            if (!phone_num_reg.test(tel_obj.val())) {
+                                Swal.fire({ title: "请输入正确的手机号", confirmButtonColor: '#3190e8' });
+                                return;
+                            }
+
+                            if (address_obj.val() == "") {
+                                Swal.fire({ title: "收货地址不能为空", confirmButtonColor: '#3190e8' });
+                                return;
+                            }
+
+                            $.ajax({
+                                url: getUrl("/address/add"),
+                                type: "POST",
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader("Authorization", token);
+                                },
+                                data: {
+                                    contactsName: name_obj.val(),
+                                    contactsPhoneNum: tel_obj.val(),
+                                    deliveryaddress: address_obj.val(),
+                                    commonlyUsed: used_address_obj.val(),
+                                    contactsSex: sex_checked_obj.val()
+                                },
+                                success: function (result) {
+                                    if (result.code != 0) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '新增收货地址成功',
+                                            showConfirmButton: false,
+                                            timer: 1500
+                                        });
+                                        setTimeout(function () {
+                                            if(source=="check_order"){
+                                                window.location.href = "checkOrder.html"
+                                                return;
+                                            }
+                                            window.location.href = "address.html"
+                                        }, 1500)
+                                    }
+                                }
+                            })
+                        })
+                        break;
+                }
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: '未登录',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                setTimeout(function () {
+                    parent.location.href = 'index.html';
+                }, 1500)
+            }
+        })
+    </script>
+</body>
+
+</html>

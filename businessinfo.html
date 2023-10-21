@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/businessinfo.css">
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/Getparam.js"></script>
+    <script src="js/template-web.js"></script>
+    <script src="js/math.js"></script>
+    <!-- js模板引擎 -->
+    <script type="text/html" id="business_info">
+            <div class="business_logo">
+                <img src="{{businessLogo}}" alt="">
+            </div>
+            <div class="business_title"><span>{{businessName}}({{businessAddress}})</span></div>
+            <div class="business_cost"><span>￥{{businessStartPrice}}起送|￥{{businessDeliveryPrice}}配送</span></div>
+            <div class="business_desc"><span>{{businessDesc}}</span></div>
+    </script>
+    <script type="text/html" id="food_item">
+        <li>
+            <div class="food_item" id="{{foodId}}">
+                <div class="left">
+                    <div class="food_img">
+                        <img src="{{foodPic}}" alt="">
+                    </div>
+                    <div class="food_info">
+                        <div class="food_title">
+                            <span>{{foodName}}（{{foodType}}）</span>
+                        </div>
+                        <div class="food_desc">
+                            <span>{{foodDesc}}</span>
+                        </div>
+                        <div class="food_price">￥
+                            <span>{{foodPrice}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="sub_btn" style="display: none;"><span class="iconfont" style="font-size: 20px;">&#xe601;</span></div>
+                    <div class="orders_num_text"><span>0</span></div>
+                    <div class="add_btn"><span class="iconfont" style="font-size: 20px;color: #3190e8;">&#xe602;</span></div>
+                </div>
+            </div>
+        </li>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        <span>商家信息</span>
+    </div>
+    <div class="content">
+        <div class="business_info">
+            <!-- 使用js模板引擎渲染 -->
+        </div>
+        <div class="food_list">
+            <ul>
+                <!-- 使用js模板引擎渲染 -->
+            </ul>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="left">
+            <div class="cart_icon">
+                <span class="iconfont" style="font-size: 35px;">&#xe73c;</span>
+            </div>
+            <div class="total_num" style="visibility:hidden;">
+                0
+            </div>
+            <div class="cart_text">
+                <div class="total_price">￥<span>0</span></div>
+                <div class="cost_text"><span>另需配送费3元</span></div>
+            </div>
+        </div>
+        <div class="right account">
+            <span>去结算</span>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <script>
+
+
+        $(document).ready(function () {
+
+            var token = localStorage.getItem("token");
+
+            // var business_id = $.Request("business_id");
+            var business_id = sessionStorage.getItem("business_id");
+
+            //展示总计商品数量的对象
+            var total_num_obj = $(".total_num");
+            //购物车中的总计商品数量
+            var total_num = 0;
+            //展示商品总计价格的对象
+            var total_price_obj = $(".total_price span")
+            //购物车中商品总计价格
+            var total_price = 0;
+
+
+            //配送费
+            var delivery_price = 0;
+
+            //起送费
+            var start_price = 0;
+
+            if (token != null) {
+                $.ajax({
+                    url: getUrl("/cart/getTotalNum"),
+                    type: "GET",
+                    async: false,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", token);
+                    },
+                    success: function (result) {
+                        for (var i = 0; i < result.data.length; i++) {
+                            if (result.data[i].business_id == business_id) {
+                                total_num_obj.css("visibility", "visible")
+                                total_num_obj.html(result.data[i].total_food_num)
+                                total_num = result.data[i].total_food_num
+                            }
+                        }
+                    }
+                })
+
+                $.ajax({
+                    url: getUrl("/cart/getTotalPrice"),
+                    type: "GET",
+                    async: false,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", token);
+                    },
+                    success: function (result) {
+                        for (var i = 0; i < result.data.length; i++) {
+                            if (result.data[i].business_id == business_id) {
+                                total_price_obj.html(result.data[i].total_food_price)
+                                total_price = result.data[i].total_food_price
+                            }
+                        }
+                    }
+                })
+
+                $.ajax({
+                    url: getUrl("/cart/getFoodNum"),
+                    type: "GET",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", token);
+                    },
+                    data: {
+                        businessId: business_id
+                    },
+                    success: function (result) {
+                        for (var i = 0; i < result.data.length; i++) {
+                            $(".food_item").each(function () {
+                                if ($(this).attr("id") == result.data[i].food_id) {
+                                    $(this).children(".right").children(".sub_btn").show()
+                                    $(this).children(".right").children(".orders_num_text").children("span").html(result.data[i].food_num)
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+
+
+
+            $.ajax({
+                url: getUrl("/business/getBusiness/") + business_id,
+                type: "get",
+                async: false,
+                success: function (result) {
+                    result.businessLogo = getUrl("/cos/download?key="+result.businessLogo)
+                    var html = template("business_info", result)
+                    $(".business_info").append(html);
+                    $(".cost_text span").html("另需配送费" + result.businessDeliveryPrice + "元");
+                    delivery_price = result.businessDeliveryPrice
+                    start_price = result.businessStartPrice
+                }
+            })
+
+            $.ajax({
+                url: getUrl("/business/getFood/") + business_id,
+                type: "get",
+                async: false,
+                success: function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        result[i].foodPic = getUrl("/cos/download?key="+result[i].foodPic)
+                        var html = template("food_item", result[i]);
+                        $(".food_list ul").append(html);
+                    }
+
+                    //向购物车添加食品
+                    $(".add_btn").click(function () {
+
+                        if (token == null) {
+                            Swal.fire({
+                                title: '请先登录',
+                                icon: 'info',
+                                text: "现在去登录吗?",
+                                showCancelButton: true,
+                                confirmButtonColor: '#3190e8',
+                                cancelButtonColor: '#666666',
+                                confirmButtonText: '去登录',
+                                cancelButtonText: '取消'
+                            }).then((result) => {
+                                if (result.value) {
+                                    window.location.href = "login.html";
+                                }
+                            })
+                            return;
+                        }
+
+                        var orders_num_obj = $(this).siblings(".orders_num_text").children("span");
+                        var number = parseInt(orders_num_obj.html());
+                        number++;
+                        total_num++;
+                        var food_price_obj = $(this).parent(".right").siblings(".left").children(".food_info").children(".food_price").children("span")
+                        var food_price = parseFloat(food_price_obj.html())
+                        //调用函数用于处理浮点型计算的精度问题
+                        total_price = accAdd(total_price, food_price);
+                        total_price_obj.html(total_price)
+                        if (total_num > 0) {
+                            total_num_obj.css("visibility", "visible")
+                            total_num_obj.html(total_num)
+                        }
+                        orders_num_obj.html(number)
+                        if (number > 0) {
+                            $(this).siblings(".sub_btn").show()
+                        }
+
+                        var food_id = $(this).parent(".right").parent(".food_item").attr("id");
+
+                        if (token != null) {
+                            $.ajax({
+                                url: getUrl("/cart/add"),
+                                type: "GET",
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader("Authorization", token);
+                                },
+                                data: {
+                                    businessId: business_id,
+                                    foodId: food_id,
+                                    foodNum: number
+                                },
+                                success: function (result) {
+                                    console.log(result)
+                                }
+                            })
+                        }
+
+                    });
+                    //移除购物车中的食品
+                    $(".sub_btn").click(function () {
+
+
+                        if (token == null) {
+                            Swal.fire({
+                                title: '请先登录',
+                                icon: 'info',
+                                text: "现在去登录吗?",
+                                showCancelButton: true,
+                                confirmButtonColor: '#3190e8',
+                                cancelButtonColor: '#666666',
+                                confirmButtonText: '去登录',
+                                cancelButtonText: '取消'
+                            }).then((result) => {
+                                if (result.value) {
+                                    window.location.href = "login.html";
+                                }
+                            })
+                            return;
+                        }
+
+                        var orders_num_obj = $(this).siblings(".orders_num_text").children("span");
+                        var number = parseInt(orders_num_obj.html());
+                        number--;
+                        total_num--;
+                        total_num_obj.html(total_num)
+                        var food_price_obj = $(this).parent(".right").siblings(".left").children(".food_info").children(".food_price").children("span")
+                        var food_price = parseFloat(food_price_obj.html())
+                        //调用函数用于处理浮点型计算的精度问题
+                        total_price = accSub(total_price, food_price);
+                        total_price_obj.html(total_price)
+                        if (total_num <= 0) {
+                            total_num_obj.css("visibility", "hidden")
+                        }
+                        orders_num_obj.html(number)
+                        if (number <= 0) {
+                            $(this).hide()
+                        }
+
+                        var food_id = $(this).parent(".right").parent(".food_item").attr("id");
+
+                        if (token != null) {
+                            $.ajax({
+                                url: getUrl("/cart/sub"),
+                                type: "GET",
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader("Authorization", token);
+                                },
+                                data: {
+                                    businessId: business_id,
+                                    foodId: food_id,
+                                    foodNum: number
+                                },
+                                success: function (result) {
+                                    console.log(result)
+                                }
+                            })
+                        }
+                    })
+                }
+            });
+
+            $(".account").click(function () {
+
+                if (token == null) {
+                    Swal.fire({
+                        title: '请先登录',
+                        icon: 'info',
+                        text: "现在去登录吗?",
+                        showCancelButton: true,
+                        confirmButtonColor: '#3190e8',
+                        cancelButtonColor: '#666666',
+                        confirmButtonText: '去登录',
+                        cancelButtonText: '取消'
+                    }).then((result) => {
+                        if (result.value) {
+                            window.location.href = "login.html";
+                        }
+                    })
+                    return;
+                }
+
+                if (total_num == 0) {
+                    Swal.fire({ title: "请至少选择一样商品后再结算", icon: "info", confirmButtonColor: '#3190e8' });
+                    return;
+                }
+
+                if(total_price<start_price){
+                    Swal.fire({ title: "起送费为"+start_price+"元，所选商品价格不满足起送条件", icon: "info", confirmButtonColor: '#3190e8' });
+                    return;
+                }
+
+                sessionStorage.setItem("business_title", $(".business_title span").html())
+                sessionStorage.setItem("delivery_price", delivery_price)
+                window.location.href = "checkOrder.html";
+
+            })
+        });
+    </script>
+</body>
+
+</html>

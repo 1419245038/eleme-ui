@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/payment.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/template-web.js"></script>
+    <script type="text/html" id="food_item">
+        <dd class="item">
+            <span>{{food_name}}（{{food_type}}）x{{food_num}}</span>
+            <span class="price">￥{{food_total_price}}</span>
+        </dd>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        在线支付
+    </div>
+    <div class="content">
+        <div class="order_info">
+            <span class="order_text">订单信息:</span>
+            <div class="info">
+                <dl>
+                    <dt class="title">
+                        <span class="iconfont"><span class="business_title">万家饺子（软件园E18店）</span>&#xe65c;</span>
+                        <span class="total_price">￥49</span>
+                    </dt>
+                    <!-- 使用js模板引擎渲染 -->
+                    <dd class="item">
+                        <span>配送费</span>
+                        <span class="price">￥3</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <div class="pay_group">
+            <div class="pay_item alipay">
+                <img src="img/alipay.png" alt="">
+                <span>支付宝</span>
+                <input type="radio" checked name="pay_method">
+            </div>
+            <div class="pay_item weichart">
+                <img src="img/weichart.png" alt="">
+                <span>微信</span>
+                <input type="radio" name="pay_method">
+            </div>
+            <button type="button" class="btn-block btn btn-default btn-success pay_btn">确认支付</button>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+
+            var token = localStorage.getItem("token");
+            if (token != null) {
+
+                var business_title = sessionStorage.getItem("business_title");
+
+                var delivery_price = sessionStorage.getItem("delivery_price");
+
+                var total_price = sessionStorage.getItem("total_price")
+
+                var order_info_result = sessionStorage.getItem("order_info_result");
+
+                var order_id = sessionStorage.getItem("order_id");
+
+                var order_source = sessionStorage.getItem("order_source");
+
+                console.log(order_id)
+
+                $(".business_title").html(business_title)
+                $(".total_price").html("￥" + total_price)
+                $(".price").html("￥" + delivery_price)
+
+
+                if (order_source == "unpaid") {
+                    var order_info_obj = JSON.parse(order_info_result)
+                    for (var i = 0; i < order_info_obj.data.length; i++) {
+                        if (order_info_obj.data[i].order_id == order_id) {
+                            var html = template("food_item", order_info_obj.data[i]);
+                            $(".title").after(html)
+                        }
+                    }
+
+                } else {
+                    var order_info_obj = JSON.parse(order_info_result)
+
+                    console.log(order_info_obj)
+                    for (var i = 0; i < order_info_obj.data.length; i++) {
+                        var html = template("food_item", order_info_obj.data[i]);
+                        $(".title").after(html)
+
+                        $.ajax({
+                            url: getUrl("/orderDetail/create"),
+                            type: "POST",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", token);
+                            },
+                            data: {
+                                orderId: order_id,
+                                foodId: order_info_obj.data[i].food_id,
+                                foodName: order_info_obj.data[i].food_name,
+                                foodType: order_info_obj.data[i].food_type,
+                                foodTotalPrice: order_info_obj.data[i].food_total_price,
+                                foodNum: order_info_obj.data[i].food_num
+                            },
+                            success: function (result) {
+                                console.log(result)
+                            }
+                        })
+                    }
+                }
+
+                $(".pay_btn").click(function () {
+                    $.ajax({
+                        url: getUrl("/order/pay"),
+                        type: "POST",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        data: {
+                            orderId: order_id
+                        },
+                        success: function (result) {
+                            if (result.code > 0) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '支付成功',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                setTimeout(function () {
+                                    parent.location.href = 'index.html';
+                                }, 1500)
+                            }
+                        }
+                    })
+                })
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: '未登录',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                setTimeout(function () {
+                    parent.location.href = 'index.html';
+                }, 1500)
+            }
+
+            $(".title").siblings().hide()
+            $(".title").click(function () {
+                $(this).siblings().toggle(300);
+            });
+            $(".pay_item").click(function () {
+                $(this).children("input:radio").prop('checked', true)
+            })
+
+        });
+    </script>
+</body>
+
+</html>

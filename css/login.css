@@ -1,0 +1,30 @@
+/*header start*/
+
+.header {
+    width: 100%;
+    line-height: 50px;
+    background-color: #3190e8;
+    color: #FFFFFF;
+    font-size: 15px;
+    text-align: center;
+    font-size: 20px;
+}
+
+/*header end*/
+
+/*content start*/
+.content form{
+    padding: 10px;
+}
+
+.content form input{
+    margin-top: 10px;
+}
+
+.content form button{
+    display: block;
+    margin-top: 10px;
+    width: 100%;
+}
+
+/*content end*/

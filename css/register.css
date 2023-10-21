@@ -1,0 +1,63 @@
+/*header start*/
+
+.header {
+    width: 100%;
+    line-height: 50px;
+    background-color: #3190e8;
+    color: #FFFFFF;
+    font-size: 15px;
+    text-align: center;
+    font-size: 20px;
+}
+
+/*header end*/
+
+/*content start*/
+.content form{
+    padding: 10px;
+}
+
+.content form button{
+    display: block;
+    margin-top: 10px;
+    width: 100%;
+}
+
+/**对号样式的radio**/
+input[type=radio] {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-bottom: 1px;
+}
+
+input[type=radio]:checked:before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 1px solid #4cae4c;
+    background: #5cb85c;
+    display: inline-block;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+input[type=radio]:checked:after {
+    content: '';
+    width: 10px;
+    height: 5px;
+    border: 2px solid white;
+    border-top: transparent;
+    border-right: transparent;
+    text-align: center;
+    display: block;
+    position: absolute;
+    top: 6px;
+    left: 5px;
+    transform: rotate(-45deg);
+}
+/**对号样式的radio end**/
+
+/*content end*/

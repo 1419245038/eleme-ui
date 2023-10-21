@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/checkOrder.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/template-web.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/math.js"></script>
+    <script type="text/html" id="address_item">
+        <li>
+            <div class="address_item" id="{{deliveryaddressId}}"> 
+                <span class="address_text">{{deliveryaddress}}</span>
+                {{if contactsSex==0}}
+                <span class="person_text">{{contactsName}}先生 {{contactsPhoneNum}}</span>
+                {{else if contactsSex==1}}
+                <span class="person_text">{{contactsName}}女士 {{contactsPhoneNum}}</span>
+                {{/if}}
+            </div>
+        </li>
+    </script>
+    <script type="text/html" id="food_item">
+        <li>
+            <div class="food_item" id="{{food_id}}">
+                <img class="food_pic" src="{{food_pic}}" alt="">
+                <span>{{food_name}}（{{food_type}}）x{{food_num}}</span>
+                <span class="price">￥{{food_total_price}}</span>
+            </div>
+        </li>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        确认订单
+    </div>
+    <div class="content">
+        <div class="address" data-toggle="modal" data-target="#myModal">
+            <div class="tip"><span>订单配送至:</span></div>
+            <div class="address_info"><span class="text">沈阳市浑南区智慧四街1-121号</span><span
+                    class="iconfont address_btn">&#xe65c;</span>
+            </div>
+            <div class="contacts_info"><span>朱彭贺先生 13464625092</span></div>
+        </div>
+        <div class="order_info">
+            <div class="business_info"><span>万家饺子（软件园E18店）</span></div>
+            <div class="food_info">
+                <ul>
+                    <!-- 使用js模板引擎渲染 -->
+                </ul>
+            </div>
+            <div class="cost_info">
+                <span class="cost_text">配送费</span>
+                <span class="cost_price">￥3</span>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="left">
+                <div class="total_price"><span>￥0</span></div>
+            </div>
+            <div class="right account">
+                <span class="go_pay">去支付</span>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <!-- 模态框（Modal） -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            选择收货地址
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            <!-- 使用js模板引擎渲染 -->
+                        </ul>
+                        <div class="add_address">
+                            <span class="iconfont">&#xe602;&nbsp;新增收货地址</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn btn-primary confirm">
+                            确定
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <script>
+            $(document).ready(function () {
+                var token = localStorage.getItem("token");
+                if (token != null) {
+
+                    var business_title = sessionStorage.getItem("business_title");
+
+                    var delivery_price = sessionStorage.getItem("delivery_price");
+
+                    var total_price = 0
+
+                    var address_id = 0
+
+
+                    $.ajax({
+                        url: getUrl("/address/getCommonlyUsed"),
+                        type: "GET",
+                        async: false,
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        success: function (result) {
+                            if (result.data == null) {
+                                $(".address_info .text").html("请选择收货地址")
+                                $(".contacts_info").hide()
+                            } else {
+                                address_id = result.data.deliveryaddressId
+                                $(".address_info .text").html(result.data.deliveryaddress)
+                                $(".contacts_info span").html(result.data.contactsName + (result.data.contactsSex == 0 ? "先生" : "女士") + " " + result.data.contactsPhoneNum)
+                            }
+                        }
+                    })
+
+                    $.ajax({
+                        url: getUrl("/address/getAll"),
+                        type: "GET",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        success: function (result) {
+                            for (var i = 0; i < result.data.length; i++) {
+                                var html = template("address_item", result.data[i]);
+                                $(".modal-body ul").append(html)
+                            }
+                            $(".modal-body ul li:first").addClass("checked");
+                            $(".modal-body ul li").click(function () {
+                                $(this).siblings().removeClass("checked")
+                                $(this).addClass("checked")
+                            })
+                        }
+                    })
+
+                    $(".confirm").click(function () {
+                        var address = $(".checked .address_item .address_text").html();
+                        var person = $(".checked .address_item .person_text").html();
+                        address_id = $(".checked .address_item").attr("id")
+                        $(".contacts_info").show()
+                        $(".address_info .text").html(address)
+                        $(".contacts_info span").html(person)
+                    })
+
+                    $(".business_info span").html(business_title)
+                    $(".cost_price").html(delivery_price)
+
+                    $.ajax({
+                        url: getUrl("/cart/getFoodList"),
+                        type: "GET",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        data: {
+                            businessId: sessionStorage.getItem("business_id"),
+                        },
+                        success: function (result) {
+                            for (var i = 0; i < result.data.length; i++) {
+                                result.data[i].food_pic = getUrl("/cos/download?key="+result.data[i].food_pic)
+                                var html = template("food_item", result.data[i]);
+                                $(".food_info ul").append(html)
+                                total_price = accAdd(result.data[i].food_total_price, total_price);
+                            }
+                            sessionStorage.setItem("order_info_result", JSON.stringify(result))
+                            total_price = accAdd(total_price, delivery_price)
+                            sessionStorage.setItem("total_price", total_price)
+                            $(".total_price span").html("￥" + total_price)
+                        }
+                    })
+
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '未登录',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    setTimeout(function () {
+                        parent.location.href = 'index.html';
+                    }, 1500)
+                }
+
+                $(".go_pay").click(function () {
+                    if(address_id==0){
+                        Swal.fire({ title: "请选择收货地址", confirmButtonColor: '#3190e8' });
+                        return;
+                    }
+                    $.ajax({
+                        url: getUrl("/cart/clear"),
+                        type: "POST",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        data: {
+                            businessId: sessionStorage.getItem("business_id"),
+                        },
+                        success: function (result) {
+                            console.log(result)
+                        }
+
+                    })
+
+                    $.ajax({
+                        url: getUrl("/order/create"),
+                        type: "POST",
+                        async: false,
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        data: {
+                            businessId: sessionStorage.getItem("business_id"),
+                            deliveryaddressId: address_id,
+                            orderTotalPrice: total_price,
+                            deliveryPrice: delivery_price,
+                            orderStats: 0
+                        },
+                        success: function (result) {
+                            sessionStorage.setItem("order_id", result.data)
+                            sessionStorage.setItem("order_source", "normal")
+                        }
+                    })
+
+                    window.location.href = "payment.html"
+                })
+
+                $(".modal-body .add_address").click(function () {
+                    sessionStorage.setItem("source", "check_order")
+                    sessionStorage.setItem("address_operation", "add")
+                    window.location.href = "addressOperation.html"
+                })
+            })
+
+        </script>
+</body>
+
+</html>

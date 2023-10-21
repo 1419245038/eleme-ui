@@ -1,0 +1,201 @@
+/*header start*/
+
+.header {
+    width: 100%;
+    line-height: 50px;
+    background-color: #3190e8;
+    color: #FFFFFF;
+    font-size: 15px;
+}
+
+.header .address {
+    margin-left: 10px;
+}
+
+.header .search {
+    background-color: #3190e8;
+    padding: 10px;
+}
+
+.header .search .keywords {
+    border: none;
+    border-radius: 0px;
+    font-size: 15px;
+}
+
+.header .search .keywords::-ms-input-placeholder {
+    text-align: center;
+}
+
+.header .search .keywords::-webkit-input-placeholder {
+    text-align: center;
+}
+
+
+/*header end*/
+
+/*content start*/
+
+.content .grade_menu {
+    overflow: hidden;
+    padding: 10px;
+}
+
+.content .grade_menu .subMenu {
+    width: 20%;
+    float: left;
+    cursor: pointer;
+}
+
+.content .grade_menu .subMenu img {
+    width: 50px;
+    height: 50px;
+}
+
+.content .adv .business {
+    width: 100%;
+    height: 100%;
+}
+
+.content .adv .business img {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+}
+
+.content .adv .vip {
+    width: 100%;
+    height: 100%;
+}
+
+.content .adv .vip img {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+}
+
+.content .suggest {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3A3D44;
+    height: 45px;
+    line-height: 45px;
+    position: relative;
+    text-align: center;
+}
+
+.content .suggest:before {
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 1px;
+    top: 50%;
+    background-color: #212121;
+    left: 32%;
+}
+
+.content .suggest:after{
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 1px;
+    top: 50%;
+    background-color: #212121;
+    right: 32%;
+}
+
+.content .screen{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    margin: 0 auto;
+    text-align: center;
+    color: #666666;
+}
+
+.content .screen li{
+    width: 24%;
+    display: inline-block;
+    font-size: 15px;
+}
+
+.content .suggest_business{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    padding-bottom: 75px;
+}
+
+.content .suggest_business li{
+    border-bottom: 1px solid #eee;
+}
+
+.content .suggest_business li:nth-last-child(2),.content ul li:last-child {
+    border-bottom: none;
+}
+
+.content .suggest_business li .end {
+    color: #666666;
+    font-size: 13px;
+    display: flex;
+    flex-direction: row;
+}
+
+.content .suggest_business li .end:before,
+.content .suggest_business li .end:after {
+    content: "";
+    flex: 1 1;
+    border-bottom: 1px solid #eee;
+    margin: auto;
+}
+
+.content .suggest_business .business_info {
+    margin: 10px;
+    padding: 10px;
+}
+
+.content .suggest_business .business_info .left {
+    float: left;
+    margin-right: 15px;
+}
+
+.content .suggest_business .business_info .total_food_num{
+    position: relative;
+    left: -10px;
+    top: -5px;
+    float: left;
+    color: #FFFFFF;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 5px;
+    border-radius: 10px;
+    background-color: #fe0000;    
+}
+
+.content .suggest_business .business_info .left img {
+    float: left;
+    width: 70px;
+    height: 70px;
+}
+
+.content .suggest_business .business_info .right .title {
+    font-weight: bold;
+}
+
+.content .suggest_business .business_info .right .cost {
+    color: #666666;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+.content .suggest_business .business_info .right .desc {
+    color: #666666;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+
+
+/*content end*/

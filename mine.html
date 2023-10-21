@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/mine.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/jQuery.cookie.js"></script>
+    <script src="js/url.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        我的
+    </div>
+    <div class="content">
+        <div class="user">
+            <div class="tx">
+                <img src="./img/login.png" alt="">
+            </div>
+            <div class="user-r">
+                <p class="tel">登录/注册</p>
+                <p class="welcome">登录后享受更多权益</p>
+            </div>
+        </div>
+        <div class="item address">
+            <span class="iconfont">&#xe600;&nbsp;我的地址</span>
+        </div>
+        <div class="item logout">
+            <span class="iconfont">&#xe623;&nbsp;退出登录</span>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem("token");
+            if (token != null) {
+                $.ajax({
+                    url: getUrl("/user/getUserInfo"),
+                    type: "GET",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", token);
+                    },
+                    success: function (result) {
+                        //token状态正常
+                        if (result.code == 0) {
+                            $(".tx img").attr("src", getUrl("/cos/download?key="+result.data.userHeaderPic));
+                            $(".tel").html(result.data.username)
+                            $(".welcome").html("欢迎使用饿了么订餐")
+                            $(".address").click(function(){
+                                window.location.href="address.html"
+                            })
+                            $(".logout").click(function () {
+                                Swal.fire({
+                                    title: "退出登录",
+                                    text: "确定要退出登录吗？",
+                                    icon: 'info',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3190e8',
+                                    cancelButtonColor: '#666666',
+                                    confirmButtonText: '确定',
+                                    cancelButtonText: '取消'
+                                }).then((result) => {
+                                    if (result.value) {
+                                        $.ajax({
+                                            url: getUrl("/user/logout"),
+                                            type: "GET",
+                                            beforeSend: function (xhr) {
+                                                xhr.setRequestHeader("Authorization", token);
+                                            },
+                                            success: function (result) {
+                                                if (result.code == 0) {
+                                                    localStorage.removeItem("token");
+                                                    Swal.fire({
+                                                        icon: 'success',
+                                                        title: '退出成功',
+                                                        showConfirmButton: false,
+                                                        timer: 1500
+                                                    });
+                                                    setTimeout(function () {
+                                                        location.reload();
+                                                    }, 1500)
+                                                }
+                                            }
+                                        })
+
+                                    }
+                                })
+                            })
+                        } else {
+                            //后端token已过期，清除客户端token
+                            localStorage.removeItem("token");
+                            Swal.fire({
+                                icon: 'error',
+                                title: '登录状态已失效，请重新登录',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500)
+                        }
+                    }
+                });
+            } else {
+                $(".user").click(function () {
+                    window.location.href = "login.html";
+                })
+                $(".address,.logout").click(function () {
+                    Swal.fire({
+                        title: '请先登录',
+                        icon: 'info',
+                        text: "现在去登录吗?",
+                        showCancelButton: true,
+                        confirmButtonColor: '#3190e8',
+                        cancelButtonColor: '#666666',
+                        confirmButtonText: '去登录',
+                        cancelButtonText: '取消'
+                    }).then((result) => {
+                        if (result.value) {
+                            window.location.href = "login.html";
+                        }
+                    })
+                })
+            }
+        })
+    </script>
+</body>
+
+</html>

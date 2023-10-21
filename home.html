@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <script src="js/url.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/Getparam.js"></script>
+    <script src="js/template-web.js"></script>
+    <!-- js模板引擎 -->
+    <script type="text/html" id="business_info">
+        <li>
+            <div class="business_info" id="{{businessId}}">
+                <div class="left">
+                    <img src="{{businessLogo}}" alt="">
+                    <div class="total_food_num" style="visibility:hidden;">
+                        10
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="title"><span>{{businessName}}({{businessAddress}})</span></div>
+                    <div class="cost"><span>￥{{businessStartPrice}}起送|￥{{businessDeliveryPrice}}配送</span></div>
+                    <div class="desc"><span>{{businessDesc}}</span></div>
+                </div>
+            </div>
+        </li>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        <div class="address">
+            <span class="iconfont icon-weizhi"></span>
+            辽宁省沈阳市沈北新区
+            <span class="glyphicon glyphicon-chevron-down" style="font-size: 15px;"></span>
+        </div>
+        <div class="search">
+            <input type="text" class="form-control keywords iconfont" id="keywords"
+                placeholder="&#xe7b7;&nbsp;搜索饿了么商家、商品名称">
+        </div>
+    </div>
+    <div class="content">
+        <div class="grade_menu">
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item1.png"
+                        alt=""></a>
+                <div class="menu_name">美食</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item2.png"
+                        alt=""></a>
+                <div class="menu_name">早餐</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item3.png"
+                        alt=""></a>
+                <div class="menu_name">跑腿代购</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item4.png"
+                        alt=""></a>
+                <div class="menu_name">汉堡披萨</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item5.png"
+                        alt=""></a>
+                <div class="menu_name">甜品饮品</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item6.png"
+                        alt=""></a>
+                <div class="menu_name">简餐素食</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item7.png"
+                        alt=""></a>
+                <div class="menu_name">地方小吃</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item8.png"
+                        alt=""></a>
+                <div class="menu_name">米粉面馆</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item9.png"
+                        alt=""></a>
+                <div class="menu_name">包子粥铺</div>
+            </div>
+            <div class="subMenu text-center menu_item">
+                <a href="find.html"><img src="img/menu_item10.png"
+                        alt=""></a>
+                <div class="menu_name">炸鸡炸串</div>
+            </div>
+        </div>
+        <div class="adv">
+            <div class="business">
+                <img src="img/sjtg.png" alt="">
+            </div>
+            <div class="vip">
+                <img src="img/hytg.png" alt="">
+            </div>
+        </div>
+        <div class="suggest">推荐商家</div>
+        <ul class="screen">
+            <li>
+                <span>综合排序<span class="glyphicon glyphicon-chevron-down" style="font-size: 10px;"></span></span>
+            </li>
+            <li>
+                <span>距离最近</span>
+            </li>
+            <li>
+                <span>销量最高</span>
+            </li>
+            <li>
+                <span class="iconfont" style="font-size: 15px;">筛选&#xe8d7;</span>
+            </li>
+        </ul>
+        <ul class="suggest_business">
+            <!-- 使用js模板引擎渲染 -->
+        </ul>
+    </div>
+    <script src="js/home.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            var token = localStorage.getItem("token");
+
+            $.ajax({
+                url: getUrl("/business/getAll"),
+                type: "get",
+                success: function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        result[i].businessLogo=getUrl("/cos/download?key="+result[i].businessLogo)
+                        var html = template("business_info", result[i]);
+                        $(".suggest_business").append(html);
+                    }
+                    $(".business_info").click(function () {
+                        var id=$(this).attr("id");
+                        sessionStorage.setItem("business_id",id);
+                        // var url=$.UrlUpdateParams("businessinfo.html","business_id",id);
+                        // console.log(url);
+                        // parent.location.href = url;
+                        parent.location.href = "businessinfo.html";
+                    })
+
+                    if (token != null) {
+                        $.ajax({
+                            url: getUrl("/cart/getTotalNum"),
+                            type: "GET",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", token);
+                            },
+                            success:function(result){
+                                for(var i=0;i<result.data.length;i++){
+                                   $(".business_info").each(function(){
+                                       if(result.data[i].business_id==$(this).attr("id")){
+                                         $(this).children(".left").children(".total_food_num").css("visibility", "visible")
+                                         $(this).children(".left").children(".total_food_num").html(result.data[i].total_food_num)
+                                       }
+                                   })
+                                }
+                            }
+                        })
+                    }
+
+                }
+            })
+        });
+    </script>
+</body>
+
+</html>

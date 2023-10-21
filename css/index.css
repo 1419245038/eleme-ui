@@ -1,0 +1,54 @@
+* {
+    box-sizing: border-box;
+}
+
+.menu {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 70px;
+    color: #D3D3D3;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    background-color: #ffffff;
+}
+
+.menu a{
+    color: inherit;
+}
+
+.subMenu {
+    width: 25%;
+    float: left;
+    cursor: pointer;
+}
+
+.menu_name {
+    height: 30px;
+    width: 100%;
+    line-height: 30px;
+    font-size: 10px;
+}
+
+.active {
+    color: #708090;
+}
+
+.text-center {
+    text-align: center
+}
+
+button{
+    border-style: none;
+}
+
+.btn-lg{
+ padding: 0;
+ line-height: 1;
+}
+
+iframe{
+    width: 100%;
+    height: 100%;
+}

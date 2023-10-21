@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/find.css">
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/Getparam.js"></script>
+    <script src="js/template-web.js"></script>
+    <!-- js模板引擎 -->
+    <script type="text/html" id="business_item">
+        <li id="{{businessId}}" class="item">
+            <div class="business_info">
+                <div class="left">
+                    <img src="{{businessLogo}}" alt="">
+                    <div class="total_food_num" style="visibility:hidden;">
+                        10
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="title"><span>{{businessName}}({{businessAddress}})</span></div>
+                    <div class="cost"><span>￥{{businessStartPrice}}起送|￥{{businessDeliveryPrice}}配送</span></div>
+                    <div class="desc"><span>{{businessDesc}}</span></div>
+                </div>
+            </div>
+        </li>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        <span>商家列表</span>
+    </div>
+    <div class="content">
+        <ul id="business_list">
+            <!-- 使用js模板引擎渲染 -->
+        </ul>
+    </div>
+    <script>
+        $(document).ready(function () {
+
+            var token = localStorage.getItem("token");
+
+            $.ajax({
+                url: getUrl("/business/getAll"),
+                type: "get",
+                success: function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        result[i].businessLogo = getUrl("/cos/download?key="+result[i].businessLogo)
+                        var html = template("business_item", result[i]);
+                        $("#business_list").append(html);
+                    }
+                    $(".item").click(function () {
+                        var id = $(this).attr("id");
+                        sessionStorage.setItem("business_id", id);
+                        // var url=$.UrlUpdateParams("businessinfo.html","business_id",id);
+                        // console.log(url);
+                        // parent.location.href = url;
+                        parent.location.href = "businessinfo.html";
+                    })
+
+                    if (token != null) {
+                        $.ajax({
+                            url: getUrl("/cart/getTotalNum"),
+                            type: "GET",
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", token);
+                            },
+                            success:function(result){
+                                for(var i=0;i<result.data.length;i++){
+                                   $(".item").each(function(){
+                                       if(result.data[i].business_id==$(this).attr("id")){
+                                         $(this).children(".business_info").children(".left").children(".total_food_num").css("visibility", "visible")
+                                         $(this).children(".business_info").children(".left").children(".total_food_num").html(result.data[i].total_food_num)
+                                       }
+                                   })
+                                }
+                            }
+                        })
+                    }
+
+                }
+            })
+        });
+    </script>
+</body>
+
+</html>

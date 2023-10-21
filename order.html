@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/order.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/template-web.js"></script>
+    <script type="text/html" id="orders_item">
+        <dl>
+            <dt class="title" id="{{order_id}}">
+                <span class="order">{{business_name}}（{{business_address}}）</span><span class="iconfont order">&#xe65c;</span>
+                <span class="total_price">￥{{order_total_price}}<span class="go_pay">去支付</span></span>
+            </dt>
+            <!-- 使用js模板引擎渲染 -->
+            <dd class="item delivery_price">
+                <span>配送费</span>
+                <span class="price">￥{{delivery_price}}</span>
+            </dd>
+        </dl>
+    </script>
+    <script type="text/html" id="food_item">
+        <dd class="item">
+            <span>{{food_name}}（{{food_type}}）x{{food_num}}</span>
+            <span class="price">￥{{food_total_price}}</span>
+        </dd>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        <span>我的订单</span>
+    </div>
+    <div class="content">
+        <div class="unpaid">
+            <span class="unpaid_text">未支付订单信息</span>
+            <div class="unpaid_info">
+                <!-- 使用js模板引擎渲染 -->
+            </div>
+        </div>
+        <div class="paid">
+            <span class="paid_text">已支付订单信息</span>
+            <div class="paid_info">
+                <!-- 使用js模板引擎渲染 -->
+            </div>
+        </div>
+        <div class="empty">
+            <span>暂无订单</span>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+
+            var token = localStorage.getItem("token");
+
+            if (token == null) {
+                $(".content").hide()
+                Swal.fire({
+                    title: '请先登录',
+                    icon: 'info',
+                    text: "现在去登录吗?",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3190e8',
+                    cancelButtonColor: '#666666',
+                    confirmButtonText: '去登录',
+                    cancelButtonText: '取消'
+                }).then((result) => {
+                    if (result.value) {
+                        parent.location.href = "login.html";
+                    }
+                })
+                return;
+            }
+
+
+
+            $.ajax({
+                url: getUrl("/order/getOrders"),
+                type: "GET",
+                async: false,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", token);
+                },
+                success: function (result) {
+                    if (result.data.length == 0) {
+                        $(".unpaid").hide()
+                        $(".paid").hide()
+                    } else {
+                        $(".empty").hide()
+                    }
+                    var unpaid_info_num = 0
+                    var paid_info_num = 0
+                    for (var i = 0; i < result.data.length; i++) {
+                        if (result.data[i].order_stats == 0) {
+                            unpaid_info_num++;
+                            var unpaid_info_html = template("orders_item", result.data[i]);
+                            $(".unpaid_info").append(unpaid_info_html)
+                        } else {
+                            paid_info_num++;
+                            var paid_info_html = template("orders_item", result.data[i]);
+                            $(".paid_info").append(paid_info_html)
+
+                        }
+                    }
+                    if (unpaid_info_num == 0) {
+                        $(".unpaid").hide()
+                    }
+                    if (paid_info_num == 0) {
+                        $(".paid").hide()
+                    }
+                }
+            })
+
+
+
+            $.ajax({
+                url: getUrl("/orderDetail/getDetail"),
+                type: "GET",
+                async: false,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", token);
+                },
+                success: function (result) {
+                    sessionStorage.setItem("order_info_result", JSON.stringify(result))
+                    for (var i = 0; i < result.data.length; i++) {
+                        $(".title").each(function () {
+                            var order_id = $(this).attr("id")
+                            if (order_id == result.data[i].order_id) {
+                                var html = template("food_item", result.data[i]);
+                                $(this).after(html)
+                            }
+                        })
+                    }
+                }
+            })
+
+            $(".paid_info .title .total_price .go_pay").hide()
+            $(".title").siblings().hide()
+            $(".order").click(function () {
+                $(this).parent().siblings().toggle(300);
+            });
+
+            $(".go_pay").click(function () {
+                var order_id=$(this).parent(".total_price").parent(".title").attr("id")
+                var business_title=$(this).parent(".total_price").siblings(".order").html()
+                var total_price=parseFloat($(this).parent(".total_price").html().replace(/[^\d.]/g,""))
+                var delivery_price=parseFloat($(this).parent(".total_price").parent(".title").siblings(".delivery_price").children(".price").html().replace("￥",""))
+                sessionStorage.setItem("delivery_price",delivery_price)
+                sessionStorage.setItem("business_title",business_title)
+                sessionStorage.setItem("order_id",order_id)
+                sessionStorage.setItem("total_price",total_price)
+                sessionStorage.setItem("order_source","unpaid")
+                window.location.href="payment.html"
+            })
+        });
+    </script>
+</body>
+
+</html>

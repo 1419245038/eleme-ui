@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/address.css">
+    <link rel="stylesheet" href="iconfont/iconfont.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/sweetalert2.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/url.js"></script>
+    <script src="js/template-web.js"></script>
+    <script type="text/html" id="address_item">
+        <li>
+            <div class="address_item" id="{{deliveryaddressId}}">
+                <div class="address_info">
+                    {{if contactsSex==0}}
+                    <span class="person_info">{{contactsName}}先生 {{contactsPhoneNum}}</span>
+                    {{else if contactsSex==1}}
+                    <span class="person_info">{{contactsName}}女士 {{contactsPhoneNum}}</span>
+                    {{/if}}
+                    <span class="address">{{deliveryaddress}}</span>
+                </div>
+                <div class="address_operation">
+                    <span class="iconfont update" style="font-size: 25px;margin-right: 13px;">&#xe603;</span>
+                    <span class="iconfont remove" style="font-size: 25px;">&#xe718;</span>
+                </div>
+            </div>
+        </li>
+    </script>
+    <script type="text/html" id="used_address">
+        <div class="tip">常用收货地址</div>
+        <div class="address_item">
+            <div class="address_info">
+                {{if contactsSex==0}}
+                <span class="person_info">{{contactsName}}先生 {{contactsPhoneNum}}</span>
+                {{else if contactsSex==1}}
+                <span class="person_info">{{contactsName}}女士 {{contactsPhoneNum}}</span>
+                {{/if}}
+                <span class="address">{{deliveryaddress}}</span>
+            </div>
+        </div>
+    </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        地址管理
+    </div>
+    <div class="content">
+        <div class="used_address">
+            <!-- 使用js模板引擎渲染 -->
+        </div>
+        <div class="tip" style="display: none;">收货地址</div>
+        <div class="address_list">
+            <ul>
+                <!-- 使用js模板引擎渲染 -->
+            </ul>
+        </div>
+        <div class="add_address">
+            <span class="iconfont">&#xe602;&nbsp;新增收货地址</span>
+        </div>
+        <script>
+            $(document).ready(function () {
+                var token = localStorage.getItem("token");
+                if (token != null) {
+                    //获取所有收货地址
+                    $.ajax({
+                        url: getUrl("/address/getAll"),
+                        type: "GET",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        success: function (result) {
+                            //token状态正常
+                            if (result.code == 0) {
+                                if (result.data.length != 0) {
+                                    $(".tip").show();
+                                    for (var i = 0; i < result.data.length; i++) {
+                                        var html = template("address_item", result.data[i]);
+                                        $(".address_list ul").append(html)
+                                    }
+                                    //删除收货地址
+                                    $(".remove").click(function () {
+                                        Swal.fire({
+                                            title: '删除收货地址',
+                                            icon: 'info',
+                                            text: "确定要删除这个收货地址吗？",
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#3190e8',
+                                            cancelButtonColor: '#666666',
+                                            confirmButtonText: '确定',
+                                            cancelButtonText: '取消'
+                                        }).then((result) => {
+                                            if (result.value) {
+                                                var address_id = $(this).parent(".address_operation").parent(".address_item").attr("id")
+                                                $.ajax({
+                                                    url: getUrl("/address/remove"),
+                                                    type: "POST",
+                                                    beforeSend: function (xhr) {
+                                                        xhr.setRequestHeader("Authorization", token);
+                                                    },
+                                                    data: {
+                                                        addressId: address_id
+                                                    },
+                                                    success: function (result) {
+                                                        if (result.code != 0) {
+                                                            Swal.fire({
+                                                                icon: 'success',
+                                                                title: '删除成功',
+                                                                showConfirmButton: false,
+                                                                timer: 1500
+                                                            });
+                                                            setTimeout(function () {
+                                                                location.reload();
+                                                            }, 1500)
+                                                        }
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    })
+                                    //更新收货地址
+                                    $(".update").click(function () {
+                                        var address_id = $(this).parent(".address_operation").parent(".address_item").attr("id");
+                                        sessionStorage.setItem("address_operation", "update")
+                                        sessionStorage.setItem("address_id", address_id)
+                                        window.location.href = "addressOperation.html"
+                                    })
+                                }
+                            }
+                        }
+                    })
+                    //获取常用收货地址
+                    $.ajax({
+                        url: getUrl("/address/getCommonlyUsed"),
+                        type: "GET",
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", token);
+                        },
+                        success: function (result) {
+                            //token状态正常
+                            if (result.code == 0) {
+                                if (result.data != null) {
+                                    var html = template("used_address", result.data);
+                                    $(".used_address").append(html)
+                                }
+                            }
+                        }
+                    })
+                    //新增收货地址
+                    $(".add_address").click(function () {
+                        sessionStorage.setItem("source","address")
+                        sessionStorage.setItem("address_operation", "add")
+                        window.location.href = "addressOperation.html"
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '未登录',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    setTimeout(function () {
+                        parent.location.href = 'index.html';
+                    }, 1500)
+                }
+            })
+        </script>
+</body>
+
+</html>

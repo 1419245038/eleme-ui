@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="css/sweetalert2.min.css">
+    <script src="js/url.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/sweetalert2.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="header">
+        用户注册
+    </div>
+    <div class="content">
+        <form action="">
+            <div class="form-group">
+                <input type="text" class="form-control" id="name" placeholder="请输入手机号码" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" placeholder="请输入密码">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="repassword" placeholder="请输入确认密码">
+            </div>
+            <div class="form-group">
+                <label for="">性别:</label>
+                <div style="display: inline-block;">
+                    <input type="radio" checked name="sex" value="0">
+                    <span>男</span>
+                </div>
+                <div style="display: inline-block;">
+                    <input type="radio" name="sex" value="1">
+                    <span>女</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-default btn-success register">注册</button>
+        </form>
+    </div>
+    <script>
+        $(".register").click(function () {
+            var username = $("#name").val();
+            var password = $("#password").val();
+            var repassword = $("#repassword").val();
+            var sex = $('input:radio:checked').val();
+
+            var phone_num_reg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;
+            var password_reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,10}$/;
+
+            if (username == "") {
+                Swal.fire({ title: "用户名不能为空", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            if (password == "") {
+                Swal.fire({ title: "密码不能为空", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            if (repassword == "") {
+                Swal.fire({ title: "确认密码不能为空", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            if (!phone_num_reg.test(username)) {
+                Swal.fire({ title: "请输入正确的手机号", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            if (!password_reg.test(password)) {
+                Swal.fire({ title: "密码在6-10位之间且必须包含数字、字母", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            if (password != repassword) {
+                Swal.fire({ title: "密码与确认密码不一致", confirmButtonColor: '#3190e8' });
+                return;
+            }
+            $.ajax({
+                url: getUrl("/user/register"),
+                type: "post",
+                data: {
+                    username: username,
+                    password: password,
+                    sex: sex
+                },
+                success: function (result) {
+                    if (result.code != 1) {
+                        Swal.fire({ title: result.msg, confirmButtonColor: '#3190e8' });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '注册成功',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        setTimeout(function () {
+                            window.location.href = "login.html"
+                        }, 1500)
+                    }
+                }
+            })
+
+        })
+    </script>
+</body>
+
+</html>

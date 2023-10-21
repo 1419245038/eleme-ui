@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>饿了么</title>
+    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+</head>
+
+<body onload="initSize()" onresize="initSize()">
+    <!--container-->
+    <div id="container">
+        <iframe src="home.html" frameborder="0" name="option" id="option"></iframe>
+    </div>
+    <!--bottom-->
+    <div id="menu" class="menu">
+        <a href="home.html" target="option">
+            <div class="subMenu text-center">
+                <span class="glyphicon glyphicon-home btn-lg" style="font-size:25px;"></span>
+                <div class="menu_name">首页</div>
+            </div>
+        </a>
+        <a href="find.html" target="option">
+            <div class="subMenu text-center">
+                <span class="glyphicon glyphicon-search btn-lg" style="font-size:25px;"></span>
+                <div class="menu_name">发现</div>
+            </div>
+        </a>
+        <a href="order.html" target="option">
+            <div class="subMenu text-center">
+                <span class="glyphicon glyphicon-list btn-lg" style="font-size:25px;"></span>
+                <div class="menu_name">订单</div>
+            </div>
+        </a>
+        <a href="mine.html" target="option">
+            <div class="subMenu text-center">
+                <span class="glyphicon glyphicon-user btn-lg" style="font-size:25px;"></span>
+                <div class="menu_name">我的</div>
+            </div>
+        </a>
+    </div>
+
+</body>
+<script>
+    $(document).ready(function () {
+        //点击事件
+        $("div .subMenu").click(function () {
+            $(".active").removeClass("active");
+            // 添加新状态
+            $(this).addClass("active");
+        });
+
+        // 自动点击第一个菜单
+        $("div .subMenu")[0].click();
+
+    });
+
+    /*content高度*/
+    function initSize() {
+        var height = $(window).height() - $("#menu").height();
+        $("#container").height(height + "px");
+    }
+</script>
+
+</html>
